@@ -1,0 +1,88 @@
+C51 COMPILER V9.56.0.0   MAIN                                                              09/15/2026 21:50:08 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\Main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(C:\Keil_v5\C51\INC\Atmel) DEBUG O
+                    -BJECTEXTEND PRINT(.\Listings\Main.lst) TABS(2) OBJECT(.\Objects\Main.obj)
+
+line level    source
+
+   1          #include <REG52.H>
+   2          #include "LCD1602.h"
+   3          
+   4          void UART_Init(void)
+   5          {
+   6   1          SCON = 0x50;
+   7   1      
+   8   1          TMOD &= 0x0F;
+   9   1          TMOD |= 0x20;
+  10   1      
+  11   1          PCON &= 0x7F;
+  12   1      
+  13   1          TH1 = 0xFD;
+  14   1          TL1 = 0xFD;
+  15   1      
+  16   1          TR1 = 1;
+  17   1      }
+  18          
+  19          void UART_SendByte(unsigned char dat)
+  20          {
+  21   1          SBUF = dat;
+  22   1      
+  23   1          while(TI == 0);
+  24   1      
+  25   1          TI = 0;
+  26   1      }
+  27          
+  28          unsigned char UART_ReceiveByte(void)
+  29          {
+  30   1          unsigned char dat;
+  31   1      
+  32   1          while(RI == 0);
+  33   1      
+  34   1          RI = 0;
+  35   1          dat = SBUF;
+  36   1      
+  37   1          return dat;
+  38   1      }
+  39          
+  40          void main(void)
+  41          {
+  42   1          unsigned char dat;
+  43   1          unsigned char val1=1;
+  44   1          unsigned char val2=1;
+  45   1      
+  46   1          UART_Init();
+  47   1          LCD_Init();
+  48   1      
+  49   1          while(1)
+  50   1          {
+  51   2              dat = UART_ReceiveByte();
+  52   2              LCD_ShowChar(val1,val2,dat);
+  53   2              ++val2;
+  54   2              if(val2>16){
+C51 COMPILER V9.56.0.0   MAIN                                                              09/15/2026 21:50:08 PAGE 2   
+
+  55   3                  val2 = 1;
+  56   3                  if(val1 == 1) val1 = 2;
+  57   3                  else val1 = 1;
+  58   3              }
+  59   2              
+  60   2              UART_SendByte(dat);
+  61   2          }
+  62   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     95    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       3
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
