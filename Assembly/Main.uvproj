@@ -364,11 +364,6 @@
           <GroupName>Source Group 1</GroupName>
           <Files>
             <File>
-              <FileName>STARTUP.A51</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\STARTUP.A51</FilePath>
-            </File>
-            <File>
               <FileName>Main.a51</FileName>
               <FileType>2</FileType>
               <FilePath>.\Main.a51</FilePath>

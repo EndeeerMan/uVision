@@ -4,7 +4,7 @@
             "name": "Target 1",
             "includePath": [
                 "C:\\Keil_v5\\C51\\INC",
-                "c:\\Users\\endeeerman\\Desktop\\projects\\uVision\\Project_5_Assembly"
+                "c:\\Users\\endeeerman\\Desktop\\projects\\uVision\\Assembly"
             ],
             "defines": [
                 "__C51__",

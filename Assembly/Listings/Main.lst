@@ -1,0 +1,80 @@
+A51 MACRO ASSEMBLER  MAIN                                                                 09/20/2026 22:36:34 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.2.5.0
+OBJECT MODULE PLACED IN .\Objects\Main.obj
+ASSEMBLER INVOKED BY: C:\Keil_v5\C51\BIN\A51.EXE Main.a51 SET(SMALL) DEBUG PRINT(.\Listings\Main.lst) OBJECT(.\Objects\M
+                      ain.obj) EP
+
+LOC  OBJ            LINE     SOURCE
+
+0000                   1     ORG 0000H
+
+0000 020100            2     LJMP MAIN
+
+                       3     
+
+0100                   4     ORG 0100H
+
+0100                   5     MAIN:
+
+0100 74FE              6         MOV A, #0FEH
+
+                       7     
+
+0102 F5A0              8         MOV P2, A
+
+                       9     
+
+0104                  10         LOOP:
+
+0104 F5A0             11             MOV P2, A
+
+0106 12010C           12             LCALL DELAY
+
+                      13     
+
+0109 23               14             RL A
+
+010A 80F8             15             SJMP LOOP
+
+                      16     
+
+010C                  17     DELAY:
+
+010C 7FC8             18         MOV R7, #200
+
+010E                  19     D1: 
+
+010E 7EFA             20         MOV R6, #250
+
+0110                  21     D2: 
+
+0110 DEFE             22         DJNZ R6, D2
+
+0112 DFFA             23         DJNZ R7, D1
+
+0114 22               24         RET
+
+                      25     END
+
+A51 MACRO ASSEMBLER  MAIN                                                                 09/20/2026 22:36:34 PAGE     2
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+D1 . . . . . . . .  C ADDR   010EH   A   
+D2 . . . . . . . .  C ADDR   0110H   A   
+DELAY. . . . . . .  C ADDR   010CH   A   
+LOOP . . . . . . .  C ADDR   0104H   A   
+MAIN . . . . . . .  C ADDR   0100H   A   
+P2 . . . . . . . .  D ADDR   00A0H   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)
