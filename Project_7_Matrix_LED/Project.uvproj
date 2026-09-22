@@ -373,6 +373,16 @@
               <FileType>2</FileType>
               <FilePath>.\STARTUP.A51</FilePath>
             </File>
+            <File>
+              <FileName>Board_LED_74595HC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Board_LED_74595HC.c</FilePath>
+            </File>
+            <File>
+              <FileName>Board_LED_74595HC.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Board_LED_74595HC.h</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>

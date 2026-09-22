@@ -1,0 +1,58 @@
+C51 COMPILER V9.56.0.0   BOARD_LED_74595HC                                                 09/22/2026 12:21:25 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE BOARD_LED_74595HC
+OBJECT MODULE PLACED IN .\Objects\Board_LED_74595HC.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Board_LED_74595HC.c OPTIMIZE(8,SPEED) BROWSE INCDIR(C:\Keil_v5\C51\INC\S
+                    -TC) DEBUG OBJECTEXTEND PRINT(.\Listings\Board_LED_74595HC.lst) TABS(2) OBJECT(.\Objects\Board_LED_74595HC.obj)
+
+line level    source
+
+   1          #include <STC89C5xRC.H>
+   2          #include "Board_LED_74595HC.h"
+   3          
+   4          sbit RCK = P3^5;        //RCLK
+   5          sbit SCK = P3^6;        //SRCLK
+   6          sbit SER = P3^4;        //SER
+   7          
+   8          void MatrixLED_Init(void)
+   9          {
+  10   1          SCK = 0;
+  11   1          RCK = 0;
+  12   1          P0 = 0xFF;
+  13   1      }
+  14          
+  15          void _74595HC_WriteByte(unsigned char dat)  
+  16          {
+  17   1          unsigned char i;
+  18   1      
+  19   1          for (i = 0; i < 8; i++)
+  20   1          {
+  21   2              SER = (dat >> i) & 0x01;
+  22   2              SCK = 1;
+  23   2              SCK = 0;
+  24   2          }
+  25   1      
+  26   1          RCK = 1;
+  27   1          RCK = 0;
+  28   1      }
+  29          
+  30          void MatrixLED_ColumnScan(unsigned char column, unsigned char dat)
+  31          {
+  32   1          _74595HC_WriteByte(dat);
+  33   1          P0 = ~(0x01 << (column - 1));
+  34   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     63    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
