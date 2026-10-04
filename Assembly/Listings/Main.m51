@@ -1,4 +1,4 @@
-BL51 BANKED LINKER/LOCATER V6.22                                                        09/20/2026  22:36:34  PAGE 1
+BL51 BANKED LINKER/LOCATER V6.22                                                        09/23/2026  11:39:36  PAGE 1
 
 
 BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
@@ -19,7 +19,7 @@ LINK MAP OF MODULE:  .\Objects\Main (MAIN)
             REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
 
             * * * * * * *   C O D E   M E M O R Y   * * * * * * *
-            CODE    0000H     0115H     ABSOLUTE     
+            CODE    0000H     011BH     ABSOLUTE     
 
 
 
@@ -29,25 +29,27 @@ SYMBOL TABLE OF MODULE:  .\Objects\Main (MAIN)
   ----------------------------------
 
   -------         MODULE        MAIN
-  C:010EH         SYMBOL        D1
-  C:0110H         SYMBOL        D2
-  C:010CH         SYMBOL        DELAY
-  C:0104H         SYMBOL        LOOP
+  C:0110H         SYMBOL        CIR1
+  C:0103H         SYMBOL        LOOP
   C:0100H         SYMBOL        MAIN
-  D:00A0H         SYMBOL        P2
+  D:0080H         SYMBOL        P0
+  D:00B0H         SYMBOL        P3
+  C:0105H         SYMBOL        _74595HC_WRITEBYTE
   C:0000H         LINE#         2
   C:0100H         LINE#         6
-  C:0102H         LINE#         8
-  C:0104H         LINE#         11
-  C:0106H         LINE#         12
-  C:0109H         LINE#         14
+  C:0103H         LINE#         10
+  C:0105H         LINE#         13
+  C:0108H         LINE#         14
   C:010AH         LINE#         15
-  C:010CH         LINE#         18
-  C:010EH         LINE#         20
-  C:0110H         LINE#         22
-  C:0112H         LINE#         23
-  C:0114H         LINE#         24
+  C:010CH         LINE#         16
+  C:010EH         LINE#         18
+  C:0110H         LINE#         21
+  C:0112H         LINE#         22
+  C:0114H         LINE#         23
+  C:0116H         LINE#         25
+  C:0118H         LINE#         26
+  C:011AH         LINE#         27
   -------         ENDMOD        MAIN
 
-Program Size: data=8.0 xdata=0 code=277
+Program Size: data=8.0 xdata=0 code=283
 LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

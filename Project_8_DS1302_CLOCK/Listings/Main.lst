@@ -1,0 +1,528 @@
+C51 COMPILER V9.56.0.0   MAIN                                                              10/02/2026 16:24:50 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\Main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE Main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(C:\Keil_v5\C51\INC\STC) DEBUG OBJ
+                    -ECTEXTEND PRINT(.\Listings\Main.lst) TABS(2) OBJECT(.\Objects\Main.obj)
+
+line level    source
+
+   1          #include <STC89C5xRC.H>
+   2          #include <INTRINS.H>
+   3          #include "LCD1602.h"
+   4          #include "Board_DS1302.h"
+   5          
+   6          #pragma region 各种变量
+*** WARNING C245 IN LINE 6 OF Main.c: unknown #pragma, line ignored
+   7          unsigned char year_bcd;     //年
+   8          unsigned char mo_bcd;       //月
+   9          unsigned char date_bcd;     //日
+  10          unsigned char day_bcd;      //星期
+  11          unsigned char hour_bcd;     //小时
+  12          unsigned char min_bcd;      //分钟
+  13          unsigned char sec_bcd;      //秒
+  14          unsigned char year;
+  15          unsigned char mo;
+  16          unsigned char date;
+  17          unsigned char day;
+  18          unsigned char hour;
+  19          unsigned char min;
+  20          unsigned char sec;
+  21          
+  22          volatile unsigned char Setting_Mode = 0;
+  23          volatile unsigned char Setting_Position = 1;
+  24          volatile unsigned char Blink_Flag = 1;
+  25          unsigned char Timer_Accumulator = 0;
+  26          unsigned char Write_Time_Flag = 0;
+  27          unsigned char LCD_Flash_Flag = 0;
+  28          
+  29          #pragma endregion
+*** WARNING C245 IN LINE 29 OF Main.c: unknown #pragma, line ignored
+  30          
+  31          void Delay20ms(void)  //@11.0592MHz
+  32          {
+  33   1        unsigned char data i, j;
+  34   1      
+  35   1        i = 36;
+  36   1        j = 217;
+  37   1        do
+  38   1        {
+  39   2          while (--j);
+  40   2        } while (--i);
+  41   1      }
+  42          
+  43          void Global_INT_Init(void)
+  44          {
+  45   1          EA = 1;
+  46   1      }
+  47          
+  48          void INT1_Init(void)
+  49          {
+  50   1          EX1 = 1;
+  51   1          IT1 = 1;
+  52   1      }
+C51 COMPILER V9.56.0.0   MAIN                                                              10/02/2026 16:24:50 PAGE 2   
+
+  53          
+  54          void INT0_Init(void)
+  55          {
+  56   1          EX0 = 1;
+  57   1          IT0 = 1;
+  58   1      }
+  59          
+  60          void INT0_Off(void)
+  61          {
+  62   1          EX0 = 0;
+  63   1      }
+  64          
+  65          void Timer0_Init(void)
+  66          {
+  67   1          EA = 1;
+  68   1          ET0 = 1;
+  69   1          TMOD &= 0xF0;
+  70   1          TMOD |= 0x01;
+  71   1          TR0 = 1;
+  72   1          TH0 = 0x4C;
+  73   1          TL0 = 0x00;
+  74   1      }
+  75          
+  76          void Day_Play(unsigned char day)
+  77          {
+  78   1          switch(day)
+  79   1          {
+  80   2              case 1:
+  81   2                  LCD_ShowString(2, 12, "Mon  ");
+  82   2                  break;
+  83   2              case 2:
+  84   2                  LCD_ShowString(2, 12, "Tues ");
+  85   2                  break;
+  86   2              case 3:
+  87   2                  LCD_ShowString(2, 12, "Wed  ");
+  88   2                  break;
+  89   2              case 4:
+  90   2                  LCD_ShowString(2, 12, "Thurs");
+  91   2                  break;
+  92   2              case 5:
+  93   2                  LCD_ShowString(2, 12, "Fri  ");
+  94   2                  break;
+  95   2              case 6:
+  96   2                  LCD_ShowString(2, 12, "Sat  ");
+  97   2                  break;
+  98   2              case 7:
+  99   2                  LCD_ShowString(2, 12, "Sun  ");
+ 100   2                  break;
+ 101   2          }
+ 102   1      }
+ 103          
+ 104          void DS1302_ReadTime(void)
+ 105          {
+ 106   1          year_bcd = DS1302_ReadByte(0x8D);     //年
+ 107   1          mo_bcd = DS1302_ReadByte(0x89);       //月
+ 108   1          date_bcd = DS1302_ReadByte(0x87);     //日
+ 109   1          day_bcd = DS1302_ReadByte(0x8B);      //星期
+ 110   1          hour_bcd = DS1302_ReadByte(0x85);     //小时
+ 111   1          min_bcd = DS1302_ReadByte(0x83);      //分钟
+ 112   1          sec_bcd = DS1302_ReadByte(0x81);      //秒
+ 113   1              
+ 114   1          year = (year_bcd >> 4) * 10 + (year_bcd & 0x0F);
+C51 COMPILER V9.56.0.0   MAIN                                                              10/02/2026 16:24:50 PAGE 3   
+
+ 115   1          mo = (mo_bcd >> 4) * 10 + (mo_bcd & 0x0F);
+ 116   1          date = (date_bcd >> 4) * 10 + (date_bcd & 0x0F);
+ 117   1          day = (day_bcd & 0x07);
+ 118   1          hour = ((hour_bcd & 0x30) >> 4) * 10 + (hour_bcd & 0x0F);
+ 119   1          min = (min_bcd >> 4) * 10 + (min_bcd & 0x0F);
+ 120   1          sec  = ((sec_bcd & 0x70) >> 4) * 10 + (sec_bcd & 0x0F);
+ 121   1      }
+ 122          
+ 123          unsigned char Calculate_Day(void)
+ 124          {
+ 125   1          unsigned int y = 2000 + year;
+ 126   1          unsigned char code t[12] =
+ 127   1          {
+ 128   1              0, 3, 2, 5, 0, 3,
+ 129   1              5, 1, 4, 6, 2, 4
+ 130   1          };
+ 131   1          unsigned char w;
+ 132   1      
+ 133   1          if(mo < 3)
+ 134   1              y--;
+ 135   1      
+ 136   1          w = (y + y / 4 - y / 100 + y / 400 + t[mo - 1] + date) % 7;
+ 137   1      
+ 138   1          if(w == 0) return 7;
+ 139   1      
+ 140   1          return w;
+ 141   1      }
+ 142          
+ 143          void DS1302_WriteTime(void)
+ 144          {
+ 145   1          year_bcd = ((year / 10) << 4 | (year % 10)); 
+ 146   1          mo_bcd = ((mo / 10 << 4) | (mo % 10)); 
+ 147   1          date_bcd = ((date / 10 << 4) | (date % 10)); 
+ 148   1          hour_bcd = ((hour / 10 << 4) | (hour % 10)); 
+ 149   1          min_bcd = ((min / 10 << 4) | (min % 10)); 
+ 150   1          sec_bcd = ((sec / 10 << 4) | (sec % 10)); 
+ 151   1          
+ 152   1          day = Calculate_Day();
+ 153   1          day_bcd = day;
+ 154   1          
+ 155   1          DS1302_Disable_WriteProtection();
+ 156   1          DS1302_WriteByte(0x8C,year_bcd);
+ 157   1          DS1302_WriteByte(0x88,mo_bcd);
+ 158   1          DS1302_WriteByte(0x86,date_bcd);
+ 159   1          DS1302_WriteByte(0x84,hour_bcd);
+ 160   1          DS1302_WriteByte(0x82,min_bcd);
+ 161   1          DS1302_WriteByte(0x80,sec_bcd);
+ 162   1          DS1302_WriteByte(0x8A, day_bcd);
+ 163   1          DS1302_Enable_WriteProtection();
+ 164   1      }
+ 165          
+ 166          void DS1302_TimeRst(void)
+ 167          {
+ 168   1          DS1302_Disable_WriteProtection();
+ 169   1          DS1302_WriteByte(0x8C,0x00);
+ 170   1          DS1302_WriteByte(0x88,0x01);
+ 171   1          DS1302_WriteByte(0x86,0x01);
+ 172   1          DS1302_WriteByte(0x84,0x00);
+ 173   1          DS1302_WriteByte(0x82,0x00);
+ 174   1          DS1302_WriteByte(0x80,0x00);
+ 175   1      
+ 176   1          day = Calculate_Day();
+C51 COMPILER V9.56.0.0   MAIN                                                              10/02/2026 16:24:50 PAGE 4   
+
+ 177   1          day_bcd = day;
+ 178   1      
+ 179   1          DS1302_WriteByte(0x8A, day_bcd);
+ 180   1      
+ 181   1          DS1302_Enable_WriteProtection();
+ 182   1      }
+ 183          
+ 184          void Change_Setting_Mode(void) interrupt 2
+ 185          {
+ 186   1          TH0 = 0x4C;
+ 187   1          TL0 = 0x00;
+ 188   1          Setting_Mode = !Setting_Mode;
+ 189   1          if(!Setting_Mode)
+ 190   1          {
+ 191   2              Write_Time_Flag = 1;
+ 192   2          }
+ 193   1      }
+ 194          
+ 195          void Timer0_500ms_Routine(void) interrupt 1
+ 196          {
+ 197   1          TH0 = 0x4C;
+ 198   1          TL0 = 0x00;
+ 199   1          if(++Timer_Accumulator >= 10)
+ 200   1          {
+ 201   2              Blink_Flag = !Blink_Flag;
+ 202   2              Timer_Accumulator = 0;
+ 203   2          }
+ 204   1      }
+ 205          
+ 206          void LCD_ShowTime(void)
+ 207          {
+ 208   1          LCD_ShowString(1,1,"20");
+ 209   1          LCD_ShowNum(1, 3, year, 2);
+ 210   1          LCD_ShowNum(1, 6, mo, 2);
+ 211   1          LCD_ShowNum(1, 9, date, 2);
+ 212   1          Day_Play(day);
+ 213   1          LCD_ShowNum(2, 1, hour, 2);
+ 214   1          LCD_ShowNum(2, 4, min, 2);
+ 215   1          LCD_ShowNum(2, 7, sec, 2);
+ 216   1      }
+ 217          
+ 218          void Setting_Position_Change(void) interrupt 0
+ 219          {
+ 220   1          ++Setting_Position;
+ 221   1          if(Setting_Position > 6) Setting_Position = 1;
+ 222   1          LCD_Flash_Flag = 1;
+ 223   1      }
+ 224          
+ 225          void Setting_Add(void)
+ 226          {
+ 227   1          switch(Setting_Position)
+ 228   1          {
+ 229   2              case 1:
+ 230   2                  ++year;
+ 231   2                  mo = 1;
+ 232   2                  date = 1;
+ 233   2                  if(year > 99) year = 0;
+ 234   2                  break;
+ 235   2              
+ 236   2              case 2:
+ 237   2                  ++mo;
+ 238   2                  date = 1;
+C51 COMPILER V9.56.0.0   MAIN                                                              10/02/2026 16:24:50 PAGE 5   
+
+ 239   2                  if(mo > 12) mo = 1;
+ 240   2                  break;
+ 241   2      
+ 242   2              case 3:
+ 243   2                  if(mo == 2)
+ 244   2                  {
+ 245   3                      if(year % 4 == 0)
+ 246   3                      {
+ 247   4                          ++date;
+ 248   4                          if(date > 29) date = 1;
+ 249   4                      }
+ 250   3                      else
+ 251   3                      {
+ 252   4                          ++date;
+ 253   4                          if(date > 28) date = 1;
+ 254   4                      }
+ 255   3                  }
+ 256   2                  else if(mo == 1 || mo == 3 || mo == 5 || mo == 7 || mo == 8 || mo == 10 || mo == 12)
+ 257   2                  {
+ 258   3                      ++date;
+ 259   3                      if(date > 31) date = 1;
+ 260   3                  }
+ 261   2                  else
+ 262   2                  {
+ 263   3                      ++date;
+ 264   3                      if(date > 30) date = 1;
+ 265   3                  }
+ 266   2                  break;
+ 267   2              
+ 268   2              case 4:
+ 269   2                  ++hour;
+ 270   2                  if(hour >= 24) hour = 0;
+ 271   2                  break;
+ 272   2      
+ 273   2              case 5:
+ 274   2                  ++min;
+ 275   2                  if(min >= 60) min = 0;
+ 276   2                  break;
+ 277   2              
+ 278   2              case 6:
+ 279   2                  ++sec;
+ 280   2                  if(sec >= 60) sec = 0;
+ 281   2                  break;
+ 282   2      
+ 283   2              default:
+ 284   2                  Setting_Position = 1;
+ 285   2                  break;
+ 286   2              
+ 287   2          }
+ 288   1      }
+ 289          
+ 290          void Setting_Sub(void)
+ 291          {
+ 292   1          switch(Setting_Position)
+ 293   1          {
+ 294   2              case 1:
+ 295   2                  --year;
+ 296   2                  mo = 1;
+ 297   2                  date = 1;
+ 298   2                  if(year > 99) year = 99;
+ 299   2                  break;
+ 300   2              
+C51 COMPILER V9.56.0.0   MAIN                                                              10/02/2026 16:24:50 PAGE 6   
+
+ 301   2              case 2:
+ 302   2                  --mo;
+ 303   2                  date = 1;
+ 304   2                  if(mo == 0 || mo > 12) mo = 12;
+ 305   2                  break;
+ 306   2      
+ 307   2              case 3:
+ 308   2                  --date;
+ 309   2                  if(date == 0 || date > 31)
+ 310   2                  {
+ 311   3                      if(mo == 2)
+ 312   3                      {
+ 313   4                          if(year % 4 == 0)
+ 314   4                          {
+ 315   5                              date = 29;
+ 316   5                          }
+ 317   4                          else
+ 318   4                          {
+ 319   5                              date = 28;
+ 320   5                          }
+ 321   4                      }
+ 322   3                      else if(mo == 1 || mo == 3 || mo == 5 || mo == 7 || mo == 8 || mo == 10 || mo == 12)
+ 323   3                      {
+ 324   4                          date = 31;
+ 325   4                      }
+ 326   3                      else
+ 327   3                      {
+ 328   4                          date = 30;
+ 329   4                      }
+ 330   3                  }
+ 331   2                  break;
+ 332   2              
+ 333   2              case 4:
+ 334   2                  --hour;
+ 335   2                  if(hour > 23) hour = 23;
+ 336   2                  break;
+ 337   2      
+ 338   2              case 5:
+ 339   2                  --min;
+ 340   2                  if(min > 59) min = 59;
+ 341   2                  break;
+ 342   2              
+ 343   2              case 6:
+ 344   2                  --sec;
+ 345   2                  if(sec > 59) sec = 59;
+ 346   2                  break;
+ 347   2      
+ 348   2              default:
+ 349   2                  Setting_Position = 1;
+ 350   2                  break;
+ 351   2              
+ 352   2          }
+ 353   1      }
+ 354          
+ 355          void Setting_Show(void)
+ 356          {
+ 357   1          if(LCD_Flash_Flag)
+ 358   1          {
+ 359   2              LCD_Flash_Flag = 0;
+ 360   2              LCD_ShowTime();
+ 361   2          }
+ 362   1      
+C51 COMPILER V9.56.0.0   MAIN                                                              10/02/2026 16:24:50 PAGE 7   
+
+ 363   1          switch (Setting_Position)
+ 364   1          {
+ 365   2          case 1:
+ 366   2              if(Blink_Flag)
+ 367   2              {
+ 368   3                  LCD_ShowString(1,1,"    ");
+ 369   3              }
+ 370   2              else
+ 371   2              {
+ 372   3                  LCD_ShowString(1,1,"20");
+ 373   3                  LCD_ShowNum(1, 3, year, 2);
+ 374   3              }
+ 375   2              break;
+ 376   2          
+ 377   2          case 2:
+ 378   2              if(Blink_Flag)
+ 379   2              {
+ 380   3                  LCD_ShowString(1,6,"  ");
+ 381   3              }
+ 382   2              else
+ 383   2              {
+ 384   3                  LCD_ShowNum(1, 6, mo, 2);
+ 385   3              }
+ 386   2              break;
+ 387   2          
+ 388   2          case 3:
+ 389   2              if(Blink_Flag)
+ 390   2              {
+ 391   3                  LCD_ShowString(1, 9,"  ");
+ 392   3              }
+ 393   2              else
+ 394   2              {
+ 395   3                  LCD_ShowNum(1, 9, date, 2);
+ 396   3              }
+ 397   2              break;
+ 398   2      
+ 399   2          case 4:
+ 400   2              if(Blink_Flag)
+ 401   2              {
+ 402   3                  LCD_ShowString(2,1,"  ");
+ 403   3              }
+ 404   2              else
+ 405   2              {
+ 406   3                  LCD_ShowNum(2, 1, hour, 2);
+ 407   3              }
+ 408   2              break;
+ 409   2          
+ 410   2          case 5:
+ 411   2              if(Blink_Flag)
+ 412   2              {
+ 413   3                  LCD_ShowString(2,4,"  ");
+ 414   3              }
+ 415   2              else
+ 416   2              {
+ 417   3                  LCD_ShowNum(2, 4, min, 2);
+ 418   3              }
+ 419   2              break;
+ 420   2          
+ 421   2          case 6:
+ 422   2              if(Blink_Flag)
+ 423   2              {
+ 424   3                  LCD_ShowString(2,7,"  ");
+C51 COMPILER V9.56.0.0   MAIN                                                              10/02/2026 16:24:50 PAGE 8   
+
+ 425   3              }
+ 426   2              else
+ 427   2              {
+ 428   3                  LCD_ShowNum(2, 7, sec, 2);
+ 429   3              }
+ 430   2              break;
+ 431   2      
+ 432   2          default:
+ 433   2              Setting_Position = 1;
+ 434   2              break;
+ 435   2          }
+ 436   1      }
+ 437          
+ 438          void main()
+ 439          {
+ 440   1          LCD_Init();
+ 441   1          DS1302_Init();
+ 442   1          
+ 443   1          Global_INT_Init();
+ 444   1          INT0_Init();
+ 445   1          INT1_Init();
+ 446   1          Timer0_Init();
+ 447   1          
+ 448   1          LCD_ShowString(1,1,"20  -  -  ");
+ 449   1          LCD_ShowString(2,1,"  :  :");
+ 450   1      
+ 451   1          while(1)
+ 452   1          {
+ 453   2              if(!Setting_Mode)
+ 454   2              {
+ 455   3                  DS1302_ReadTime();
+ 456   3                  LCD_ShowTime();
+ 457   3              }
+ 458   2              else
+ 459   2              {
+ 460   3                  while(P31 && P30 && Setting_Mode) Setting_Show();
+ 461   3                  if(!P31 || !P30) Delay20ms();
+ 462   3                  if(!P31)
+ 463   3                  {
+ 464   4                      Setting_Add();
+ 465   4      
+ 466   4                      while(!P31);
+ 467   4                  }
+ 468   3                  else if(!P30)
+ 469   3                  {
+ 470   4                      Setting_Sub();
+ 471   4      
+ 472   4                      while(!P30);
+ 473   4                  }
+ 474   3              }
+ 475   2              if(Write_Time_Flag)
+ 476   2              {
+ 477   3                  Write_Time_Flag = 0;
+ 478   3      
+ 479   3                  DS1302_WriteTime();     
+ 480   3      
+ 481   3                  LCD_Init();
+ 482   3                  LCD_ShowString(1,1,"20  -  -  ");
+ 483   3                  LCD_ShowString(2,1,"  :  :");
+ 484   3              }
+ 485   2          }
+ 486   1      }
+C51 COMPILER V9.56.0.0   MAIN                                                              10/02/2026 16:24:50 PAGE 9   
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1684    ----
+   CONSTANT SIZE    =     83    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     20    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  2 WARNING(S),  0 ERROR(S)

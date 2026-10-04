@@ -1,4 +1,4 @@
-A51 MACRO ASSEMBLER  MAIN                                                                 09/20/2026 22:36:34 PAGE     1
+A51 MACRO ASSEMBLER  MAIN                                                                 09/23/2026 11:39:35 PAGE     1
 
 
 MACRO ASSEMBLER A51 V8.2.5.0
@@ -18,47 +18,53 @@ LOC  OBJ            LINE     SOURCE
 
 0100                   5     MAIN:
 
-0100 74FE              6         MOV A, #0FEH
+0100 120105            6         LCALL _74595HC_WRITEBYTE
 
                        7     
 
-0102 F5A0              8         MOV P2, A
+0103                   8         LOOP:
 
-                       9     
+                       9             
 
-0104                  10         LOOP:
+0103 80FE             10             SJMP LOOP
 
-0104 F5A0             11             MOV P2, A
+                      11     
 
-0106 12010C           12             LCALL DELAY
+0105                  12     _74595HC_WRITEBYTE:
 
-                      13     
+0105 758000           13         MOV P0, #0000
 
-0109 23               14             RL A
+0108 D2B4             14         SETB P3.4
 
-010A 80F8             15             SJMP LOOP
+010A C2B6             15         CLR P3.6
 
-                      16     
+010C C2B5             16         CLR P3.5 
 
-010C                  17     DELAY:
+                      17         
 
-010C 7FC8             18         MOV R7, #200
+010E 7808             18         MOV R0, #0008
 
-010E                  19     D1: 
+                      19         
 
-010E 7EFA             20         MOV R6, #250
+0110                  20         CIR1:
 
-0110                  21     D2: 
+0110 D2B6             21             SETB P3.6   ;SCLK
 
-0110 DEFE             22         DJNZ R6, D2
+0112 C2B6             22             CLR P3.6
 
-0112 DFFA             23         DJNZ R7, D1
+0114 D8FA             23         DJNZ R0,CIR1
 
-0114 22               24         RET
+                      24     
 
-                      25     END
+0116 D2B5             25         SETB P3.5       ;RCLK
 
-A51 MACRO ASSEMBLER  MAIN                                                                 09/20/2026 22:36:34 PAGE     2
+0118 C2B5             26         CLR P3.5
+
+011A 22               27         RET
+
+                      28     END
+
+A51 MACRO ASSEMBLER  MAIN                                                                 09/23/2026 11:39:35 PAGE     2
 
 SYMBOL TABLE LISTING
 ------ ----- -------
@@ -66,12 +72,12 @@ SYMBOL TABLE LISTING
 
 N A M E             T Y P E  V A L U E   ATTRIBUTES
 
-D1 . . . . . . . .  C ADDR   010EH   A   
-D2 . . . . . . . .  C ADDR   0110H   A   
-DELAY. . . . . . .  C ADDR   010CH   A   
-LOOP . . . . . . .  C ADDR   0104H   A   
+CIR1 . . . . . . .  C ADDR   0110H   A   
+LOOP . . . . . . .  C ADDR   0103H   A   
 MAIN . . . . . . .  C ADDR   0100H   A   
-P2 . . . . . . . .  D ADDR   00A0H   A   
+P0 . . . . . . . .  D ADDR   0080H   A   
+P3 . . . . . . . .  D ADDR   00B0H   A   
+_74595HC_WRITEBYTE  C ADDR   0105H   A   
 
 
 REGISTER BANK(S) USED: 0 

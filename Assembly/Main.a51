@@ -3,23 +3,26 @@ LJMP MAIN
 
 ORG 0100H
 MAIN:
-    MOV A, #0FEH
-
-    MOV P2, A
+    LCALL _74595HC_WRITEBYTE
 
     LOOP:
-        MOV P2, A
-        LCALL DELAY
-
-        RL A
+        
         SJMP LOOP
 
-DELAY:
-    MOV R7, #200
-D1: 
-    MOV R6, #250
-D2: 
-    DJNZ R6, D2
-    DJNZ R7, D1
+_74595HC_WRITEBYTE:
+    MOV P0, #0000
+    SETB P3.4
+    CLR P3.6
+    CLR P3.5 
+    
+    MOV R0, #0008
+    
+    CIR1:
+        SETB P3.6   ;SCLK
+        CLR P3.6
+    DJNZ R0,CIR1
+
+    SETB P3.5       ;RCLK
+    CLR P3.5
     RET
 END
